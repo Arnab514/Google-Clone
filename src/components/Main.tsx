@@ -5,11 +5,16 @@ import Image from "next/image";
 import { AiOutlineSearch } from 'react-icons/ai';
 import { useRouter } from "next/navigation";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+import VoiceSearchModal from './VoiceSearchModal';
+import VoiceSearchPage from './VoiceSearchPage';
 
 const Main: React.FC = () => {
     const [search, setSearch] = useState<any>('');
     const [showTooltip, setShowTooltip] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+    // const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+    // Add this state at the top of your Main component:
+    const [isVoiceSearchActive, setIsVoiceSearchActive] = useState(false);
     const {
         transcript,
         listening,
@@ -27,12 +32,24 @@ const Main: React.FC = () => {
     }
 
     const startListening = () => {
-        SpeechRecognition.startListening({ continuous: true, language: 'en-IN' })
+        // setIsVoiceModalOpen(true);
+        setIsVoiceSearchActive(true);
+        resetTranscript();
+        SpeechRecognition.startListening({ continuous: false, language: 'en-IN' })
     }
 
     const stopListening = () => {
+        // setIsVoiceModalOpen(false);
         SpeechRecognition.stopListening()
-        setSearch(transcript);
+        // setSearch(transcript);
+    }
+
+    // Add this new function to handle search completion:
+    const handleVoiceSearchComplete = (finalTranscript: string) => {
+        console.log("Executing search with:", finalTranscript);
+        setSearch(finalTranscript);
+        setIsVoiceSearchActive(false);
+        router.push(`https://google.com/search?q=${finalTranscript}`);
     }
 
     const selectImage = async (e: any) => {
@@ -84,11 +101,11 @@ const Main: React.FC = () => {
                         priority
                     />
                     <div className="relative">
-                        <form 
-                            onSubmit={(e) => onSearchSubmit(e)} 
+                        <form
+                            onSubmit={(e) => onSearchSubmit(e)}
                             className="flex border border-gray-700 mt-7 px-4 rounded-full w-[584px] items-center bg-[#303134] hover:bg-[#404145]"
-                            // onMouseEnter={() => setShowTooltip(true)}
-                            // onMouseLeave={() => setShowTooltip(false)}
+                        // onMouseEnter={() => setShowTooltip(true)}
+                        // onMouseLeave={() => setShowTooltip(false)}
                         >
                             <AiOutlineSearch className="text-xl text-gray-400" />
                             <input
@@ -97,7 +114,7 @@ const Main: React.FC = () => {
                                 value={search || transcript}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onMouseEnter={handleMouseEnter}
-                            onMouseLeave={handleMouseLeave}
+                                onMouseLeave={handleMouseLeave}
                             />
                             {
                                 listening ?
@@ -136,9 +153,9 @@ const Main: React.FC = () => {
                         </form>
                         {showTooltip && (
                             <div
-                                className="absolute bg-[#303134] text-white text-xs py-1 px-3 shadow-md border border-white"
+                                className="absolute bg-[#303134] text-white text-xs py-1 px-2 shadow-md border border-white"
                                 style={{
-                                    left: tooltipPosition.x -420 ,
+                                    left: tooltipPosition.x - 420,
                                     top: tooltipPosition.y - 180, // Adjust to place it slightly below the cursor
                                     transform: 'translate(-50%, 0)', // Center the tooltip horizontally
                                 }}
@@ -170,6 +187,17 @@ const Main: React.FC = () => {
                         </span>
                     </div>
                 </div>
+                {isVoiceSearchActive && (
+                    <VoiceSearchPage
+                        isListening={listening}
+                        transcript={transcript}
+                        onClose={() => {
+                            stopListening();
+                            setIsVoiceSearchActive(false);
+                        }}
+                        onSearchComplete={handleVoiceSearchComplete}
+                    />
+                )}
             </div>
         </div>
     )
