@@ -5,6 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactCrop, { Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
+interface ImageSearchProps {
+    isOpen: boolean; // Indicates whether the modal is open
+    onClose: () => void; // Callback when the modal is closed
+    onImageSelect: (image: string) => void; // Callback when an image is selected
+  }
+
 const ImageSearchModal: React.FC<ImageSearchProps> = ({ isOpen, onClose, onImageSelect }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
