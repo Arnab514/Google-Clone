@@ -44,13 +44,13 @@ This will start the app on http://localhost:3000.
 
 
 ## Technologies Used
--- **Next.js**: A React framework for building fast and optimized web applications.
--- **TypeScript**: Adds type safety to the codebase to reduce errors and improve developer experience.
--- **Tailwind CSS**: Custom CSS for styling and animations, following Google’s UI design principles.
--- **React**: Component-based UI for efficient and reusable code.
+- **Next.js**: A React framework for building fast and optimized web applications.
+- **TypeScript**: Adds type safety to the codebase to reduce errors and improve developer experience.
+- **Tailwind CSS**: Custom CSS for styling and animations, following Google’s UI design principles.
+- **React**: Component-based UI for efficient and reusable code.
 
 ## Best Practices Followed
--- *Type Safety*: TypeScript ensures strict type-checking for better maintainability and fewer runtime errors.
--- *Component Reusability*: Components are modular and reusable for better scalability.
--- *Responsive Design*: The layout and functionality work seamlessly across all devices.
--- *Clean Code*: The project follows clean code principles with meaningful variable names, comments, and organization.
+- *Type Safety*: TypeScript ensures strict type-checking for better maintainability and fewer runtime errors.
+- *Component Reusability*: Components are modular and reusable for better scalability.
+- *Responsive Design*: The layout and functionality work seamlessly across all devices.
+- *Clean Code*: The project follows clean code principles with meaningful variable names, comments, and organization.
