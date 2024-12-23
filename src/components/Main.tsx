@@ -34,7 +34,7 @@ const Main: React.FC = () => {
     const googleLogo: string = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png';
 
     const generateSuggestions = (searchTerm: string): string[] => {
-        const commonPrefixes = ['how to', 'what is', 'where to', 'why does', 'when did'];
+        const commonPrefixes = ['how to', 'what is', 'Who is', 'where to', 'why does', 'when did'];
         const commonSuffixes = ['near me', 'online', 'meaning', 'definition', 'examples'];
         
         let suggestions: string[] = [
