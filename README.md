@@ -1,34 +1,56 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Google Clone - Next.js
 
-## Getting Started
+This project is a pixel-perfect clone of Google's homepage and image search page, built using Next.js and TypeScript. The goal was to replicate the design and functionality of Google's core pages, while implementing key features like text search suggestions, image search functionality, and a responsive UI.
 
-First, run the development server:
+## Live Demo
+You can view the live project here:  
+[Google Clone Live](#)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+## GitHub Repository
+The project repository is hosted on GitHub:  
+[Google Clone Repository](https://github.com/Arnab514/Google-Clone)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
+- **Pixel-perfect Google Homepage Clone**: A close replica of the Google homepage with all UI details and hover effects.
+- **Text Search Functionality**: Includes a search bar with real-time suggestions. Hover effects and smooth dropdown animations are implemented.
+- **Pixel-perfect Search by Voice**: A feature that allows users to search using voice input, closely replicating Google's voice search functionality. The voice search feature provides a smooth and responsive experience.
+- **Image Cropping Tool**: Allows users to crop uploaded images and includes a glowing stars animation for enhanced UI.
+- **Built with TypeScript**: The project uses TypeScript to ensure type safety and prevent potential runtime issues.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Installation
+To run the project locally:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. Clone the repository:
 
-## Learn More
+   ```bash
+   git clone https://github.com/Arnab514/Google-Clone.git
 
-To learn more about Next.js, take a look at the following resources:
+2. Navigate into the project folder:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    ```bash
+    cd Google-Clone
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+3. Install the dependencies:
 
-## Deploy on Vercel
+    ```bash
+    npm install
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run the development server:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+    ```bash
+    npm run dev
+
+This will start the app on http://localhost:3000.
+
+
+## Technologies Used
+-- **Next.js**: A React framework for building fast and optimized web applications.
+-- **TypeScript**: Adds type safety to the codebase to reduce errors and improve developer experience.
+-- **Tailwind CSS**: Custom CSS for styling and animations, following Google’s UI design principles.
+-- **React**: Component-based UI for efficient and reusable code.
+
+## Best Practices Followed
+-- *Type Safety*: TypeScript ensures strict type-checking for better maintainability and fewer runtime errors.
+-- *Component Reusability*: Components are modular and reusable for better scalability.
+-- *Responsive Design*: The layout and functionality work seamlessly across all devices.
+-- *Clean Code*: The project follows clean code principles with meaningful variable names, comments, and organization.
