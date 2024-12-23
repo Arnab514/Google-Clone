@@ -228,6 +228,7 @@ const Main: React.FC = () => {
                         >
                             <AiOutlineSearch className="text-xl text-gray-400" />
                             <input
+                            title='search'
                                 type="text"
                                 className="w-full h-11 focus:outline-none text-sm mx-4 bg-transparent text-gray-200 placeholder-gray-400"
                                 value={search || transcript}
@@ -236,7 +237,7 @@ const Main: React.FC = () => {
                                 onKeyDown={handleKeyDown}
                                 onMouseEnter={(e) => handleMouseEnter(e, 'Search')}
                                 onMouseLeave={handleMouseLeave}
-                                placeholder="Search Google or type a URL"
+                                // placeholder="Search Google or type a URL"
                             />
                             <div
                                 onMouseEnter={(e) => handleMouseEnter(e, 'Search by voice')}
