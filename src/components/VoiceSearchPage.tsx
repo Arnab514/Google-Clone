@@ -1,4 +1,7 @@
+'use client'
+
 import React, { useEffect } from 'react';
+import { X } from 'lucide-react';
 
 const VoiceSearchPage = ({ 
   isListening, 
@@ -19,20 +22,30 @@ const VoiceSearchPage = ({
 
   return (
     <div className="fixed inset-0 bg-[#202124] z-50">
+
+      {/* Close button */}
+      <button title='close'
+        onClick={onClose}
+        className="absolute top-6 right-6 text-gray-400 hover:text-gray-200"
+      >
+        <X size={24} />
+      </button>
+
       <div className="flex h-full">
+
         {/* Left side - Transcript */}
         <div className="flex-1 flex items-center justify-center px-12">
-          <div className="w-full max-w-3xl">
+          <div className="w-[50%] max-w-3xl">
             {transcript ? (
               <p className="text-4xl text-white font-light break-words">{transcript}</p>
             ) : (
-              <p className="text-2xl text-gray-400">Speak now...</p>
+              <p className="text-2xl text-gray-400">Listening...</p>
             )}
           </div>
         </div>
 
         {/* Right side - Microphone */}
-        <div className="w-96 flex flex-col items-center justify-center border-l border-gray-700">
+        <div className="w-[50%] flex flex-col items-center justify-center">
           <div className={`relative ${isListening ? 'animate-pulse' : ''}`}>
             <div className="w-32 h-32 rounded-full bg-red-500 flex items-center justify-center">
               <svg 
@@ -56,14 +69,6 @@ const VoiceSearchPage = ({
               <p>Click the microphone to try again</p>
             )}
           </div>
-
-          {/* Close button */}
-          <button 
-            onClick={onClose}
-            className="mt-8 px-6 py-2 text-gray-400 hover:bg-[#303134] rounded-full"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>

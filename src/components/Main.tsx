@@ -1,20 +1,27 @@
 'use client'
 import 'regenerator-runtime'
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { AiOutlineSearch } from 'react-icons/ai';
+import { AiOutlineSearch, AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useRouter } from "next/navigation";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
-import VoiceSearchModal from './VoiceSearchModal';
 import VoiceSearchPage from './VoiceSearchPage';
+import ImageSearchModal from './ImageSearchModal';
+import debounce from 'lodash/debounce';
 
 const Main: React.FC = () => {
-    const [search, setSearch] = useState<any>('');
-    const [showTooltip, setShowTooltip] = useState(false);
+    const [search, setSearch] = useState<string>('');
+    const [tooltipText, setTooltipText] = useState<string>('');
+    const [showTooltip, setShowTooltip] = useState<boolean>(false);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-    // const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-    // Add this state at the top of your Main component:
-    const [isVoiceSearchActive, setIsVoiceSearchActive] = useState(false);
+    const [isVoiceSearchActive, setIsVoiceSearchActive] = useState<boolean>(false);
+    const [isImageSearchOpen, setIsImageSearchOpen] = useState<boolean>(false);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+    const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    
+
     const {
         transcript,
         listening,
@@ -26,58 +33,145 @@ const Main: React.FC = () => {
 
     const googleLogo: string = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png';
 
+    const generateSuggestions = (searchTerm: string): string[] => {
+        const commonPrefixes = ['how to', 'what is', 'where to', 'why does', 'when did'];
+        const commonSuffixes = ['near me', 'online', 'meaning', 'definition', 'examples'];
+        
+        let suggestions: string[] = [
+            searchTerm,
+            ...commonPrefixes.map(prefix => `${prefix} ${searchTerm}`),
+            ...commonSuffixes.map(suffix => `${searchTerm} ${suffix}`),
+        ];
+
+        // Add some context-specific suggestions
+        if (searchTerm.startsWith('how')) {
+            suggestions.push(
+                `${searchTerm} step by step`,
+                `${searchTerm} tutorial`,
+                `${searchTerm} guide`,
+                `${searchTerm} for beginners`
+            );
+        } else if (searchTerm.startsWith('what')) {
+            suggestions.push(
+                `${searchTerm} mean`,
+                `${searchTerm} definition`,
+                `${searchTerm} explained`,
+                `${searchTerm} examples`
+            );
+        } else {
+            suggestions.push(
+                `best ${searchTerm}`,
+                `${searchTerm} reviews`,
+                `${searchTerm} alternatives`,
+                `top ${searchTerm}`,
+                `${searchTerm} price`
+            );
+        }
+
+        // Filter suggestions to match search term and remove duplicates
+        return [...new Set(suggestions)]
+            .filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+            .slice(0, 10); // Limit to 10 suggestions
+    };
+
+    const debouncedFetch = useCallback(
+        debounce((searchTerm: string) => {
+            if (!searchTerm || searchTerm.length < 1) {
+                setSuggestions([]);
+                return;
+            }
+
+            setIsLoading(true);
+            
+            // Simulate network delay
+            setTimeout(() => {
+                const generatedSuggestions = generateSuggestions(searchTerm);
+                setSuggestions(generatedSuggestions);
+                setIsLoading(false);
+            }, 200);
+        }, 300),
+        []
+    );
+
+    useEffect(() => {
+        debouncedFetch(search);
+        return () => debouncedFetch.cancel();
+    }, [search, debouncedFetch]);
+
     const onSearchSubmit = (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
-        router.push(`https://google.com/search?q=${search || transcript}`);
-    }
+        const searchQuery = search || transcript;
+        if (searchQuery) {
+            router.push(`https://google.com/search?q=${searchQuery}`);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!showSuggestions) return;
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                setSelectedIndex(prev =>
+                    prev < suggestions.length - 1 ? prev + 1 : prev
+                );
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+                break;
+            case 'Enter':
+                if (selectedIndex >= 0) {
+                    setSearch(suggestions[selectedIndex]);
+                    setShowSuggestions(false);
+                    router.push(`https://google.com/search?q=${suggestions[selectedIndex]}`);
+                }
+                break;
+            case 'Escape':
+                setShowSuggestions(false);
+                break;
+        }
+    };
 
     const startListening = () => {
-        // setIsVoiceModalOpen(true);
         setIsVoiceSearchActive(true);
         resetTranscript();
         SpeechRecognition.startListening({ continuous: false, language: 'en-IN' })
     }
 
     const stopListening = () => {
-        // setIsVoiceModalOpen(false);
         SpeechRecognition.stopListening()
-        // setSearch(transcript);
     }
 
-    // Add this new function to handle search completion:
     const handleVoiceSearchComplete = (finalTranscript: string) => {
-        console.log("Executing search with:", finalTranscript);
         setSearch(finalTranscript);
         setIsVoiceSearchActive(false);
         router.push(`https://google.com/search?q=${finalTranscript}`);
     }
 
-    const selectImage = async (e: any) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    const selectImage = async (imageData: string) => {
+        try {
+            const response = await fetch(imageData);
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            document.location.assign(`https://www.google.com/searchbyimage?&image_url=${objectUrl}`);
+        } catch (error) {
+            console.error('Error processing image:', error);
+        }
+    };
 
-        const response = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-                if (!event.target) return;
-                resolve(event.target.result);
-            };
-
-            reader.onerror = (err) => {
-                reject(err);
-            };
-
-            reader.readAsDataURL(file);
-        });
-        console.log(response);
-        document.location.assign(`https://www.google.com/searchbyimage?&image_url=${response}`);
-    }
-
-
-    const handleMouseEnter = (e: React.MouseEvent) => {
+    const handleMouseEnter = (e: React.MouseEvent, text: string) => {
         const { clientX, clientY } = e;
-        setTooltipPosition({ x: clientX, y: clientY });
+        let xOffset = 450;
+
+        if (text === 'Search by voice') {
+            xOffset = 490;
+        } else if (text === 'Search by image') {
+            xOffset = 490;
+        }
+
+        setTooltipPosition({ x: clientX - xOffset, y: clientY - 190 });
+        setTooltipText(text);
         setShowTooltip(true);
     };
 
@@ -85,9 +179,36 @@ const Main: React.FC = () => {
         setShowTooltip(false);
     };
 
-    if (!browserSupportsSpeechRecognition) {
-        return null;
-    }
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (!(event.target as Element).closest('.search-suggestions-container')) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
+    const highlightMatch = (suggestion: string) => {
+        if (!search) return suggestion;
+        const regex = new RegExp(`(${search})`, 'gi');
+        const parts = suggestion.split(regex);
+        return parts.map((part, index) =>
+            regex.test(part) ?
+                <span key={index} className="text-white font-medium">{part}</span> :
+                <span key={index}>{part}</span>
+        );
+    };
+
+    // if (!browserSupportsSpeechRecognition) {
+    //     return null;
+    // }
+    useEffect(() => {
+        if (!browserSupportsSpeechRecognition) {
+            return console.log("Unsupported")
+        }
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#202124] relative">
@@ -100,12 +221,10 @@ const Main: React.FC = () => {
                         height={100}
                         priority
                     />
-                    <div className="relative">
+                    <div className="relative search-suggestions-container">
                         <form
-                            onSubmit={(e) => onSearchSubmit(e)}
+                            onSubmit={onSearchSubmit}
                             className="flex border border-gray-700 mt-7 px-4 rounded-full w-[584px] items-center bg-[#303134] hover:bg-[#404145]"
-                        // onMouseEnter={() => setShowTooltip(true)}
-                        // onMouseLeave={() => setShowTooltip(false)}
                         >
                             <AiOutlineSearch className="text-xl text-gray-400" />
                             <input
@@ -113,64 +232,96 @@ const Main: React.FC = () => {
                                 className="w-full h-11 focus:outline-none text-sm mx-4 bg-transparent text-gray-200 placeholder-gray-400"
                                 value={search || transcript}
                                 onChange={(e) => setSearch(e.target.value)}
-                                onMouseEnter={handleMouseEnter}
+                                onFocus={() => setShowSuggestions(true)}
+                                onKeyDown={handleKeyDown}
+                                onMouseEnter={(e) => handleMouseEnter(e, 'Search')}
                                 onMouseLeave={handleMouseLeave}
+                                placeholder="Search Google or type a URL"
                             />
-                            {
-                                listening ?
-                                    <Image
-                                        src="/pngwing.com.png"
-                                        alt="mic"
-                                        width={24}
-                                        height={24}
-                                        onClick={stopListening}
-                                        className="cursor-pointer"
-                                    />
-                                    : <Image
-                                        src="/pngwing.com.png"
-                                        alt="mic"
-                                        width={24}
-                                        height={24}
-                                        onClick={startListening}
-                                        className="cursor-pointer"
-                                    />
-                            }
-                            <label htmlFor="imageInput" className="ml-4">
+                            <div
+                                onMouseEnter={(e) => handleMouseEnter(e, 'Search by voice')}
+                                onMouseLeave={handleMouseLeave}
+                            >
+                                <Image
+                                    src="/pngwing.com.png"
+                                    alt="mic"
+                                    width={30}
+                                    height={30}
+                                    onClick={listening ? stopListening : startListening}
+                                    className="cursor-pointer mr-6"
+                                />
+                            </div>
+                            <div
+                                onClick={() => setIsImageSearchOpen(true)}
+                                onMouseEnter={(e) => handleMouseEnter(e, 'Search by image')}
+                                onMouseLeave={handleMouseLeave}
+                            >
                                 <Image
                                     src="/Google_Lens_Icon.png"
                                     alt="Google Lens"
-                                    width={24}
-                                    height={24}
+                                    width={30}
+                                    height={30}
                                     className="cursor-pointer"
                                 />
-                            </label>
-                            <input
-                                type="file"
-                                id="imageInput"
-                                className='hidden'
-                                onChange={(e) => selectImage(e)}
-                            />
+                            </div>
                         </form>
+
+                        {showSuggestions && search && (
+                            <div className="absolute left-0 right-0 bg-[#303134] mt-1 rounded-lg border border-gray-700 shadow-lg max-h-96 overflow-y-auto z-50 w-[584px]">
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center py-4">
+                                        <AiOutlineLoading3Quarters className="animate-spin text-gray-400" />
+                                    </div>
+                                ) : (
+                                    suggestions.map((suggestion, index) => (
+                                        <div
+                                            key={index}
+                                            className={`px-4 py-2 hover:bg-[#404145] cursor-pointer flex items-center ${
+                                                selectedIndex === index ? 'bg-[#404145]' : ''
+                                            }`}
+                                            onClick={() => {
+                                                setSearch(suggestion);
+                                                setShowSuggestions(false);
+                                                router.push(`https://google.com/search?q=${suggestion}`);
+                                            }}
+                                            onMouseEnter={() => setSelectedIndex(index)}
+                                        >
+                                            <AiOutlineSearch className="text-gray-400 mr-3 flex-shrink-0" />
+                                            <span className="text-gray-300">{highlightMatch(suggestion)}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+
                         {showTooltip && (
                             <div
-                                className="absolute bg-[#303134] text-white text-xs py-1 px-2 shadow-md border border-white"
+                                className="absolute bg-[#303134] text-white text-xs py-1 px-2 rounded whitespace-nowrap"
                                 style={{
-                                    left: tooltipPosition.x - 420,
-                                    top: tooltipPosition.y - 180, // Adjust to place it slightly below the cursor
-                                    transform: 'translate(-50%, 0)', // Center the tooltip horizontally
+                                    left: tooltipPosition.x,
+                                    top: tooltipPosition.y,
+                                    border: '1px solid #5f6368',
                                 }}
                             >
-                                Search
+                                {tooltipText}
                             </div>
                         )}
                     </div>
                     <div className="flex mt-7">
-                        <button type='button'
+                        <button
+                            type='button'
                             className="bg-[#303134] mr-3 py-2 px-4 text-sm rounded hover:border border-gray-700 text-gray-200 font-medium"
-                            onClick={(e) => onSearchSubmit(e)}>Google Search</button>
-                        <button type='button'
+                            onClick={(e) => onSearchSubmit(e)}
+                        >
+                            Google Search
+                        </button>
+                        <button
+                            type='button'
                             className="bg-[#303134] py-2 px-4 text-sm rounded hover:border border-gray-700 font-medium text-gray-200"
-                            onClick={() => router.push('https://www.google.com/doodles')}>I'm Feeling Lucky</button>
+                            onClick={() => router.push('https://www.google.com/doodles')}
+                        >
+                            I'm Feeling Lucky
+                        </button>
                     </div>
                     <div className="mt-7 text-sm text-gray-300">
                         Google offered in:{' '}
@@ -187,20 +338,27 @@ const Main: React.FC = () => {
                         </span>
                     </div>
                 </div>
-                {isVoiceSearchActive && (
-                    <VoiceSearchPage
-                        isListening={listening}
-                        transcript={transcript}
-                        onClose={() => {
-                            stopListening();
-                            setIsVoiceSearchActive(false);
-                        }}
-                        onSearchComplete={handleVoiceSearchComplete}
-                    />
-                )}
             </div>
+            
+            {isVoiceSearchActive && (
+                <VoiceSearchPage
+                    isListening={listening}
+                    transcript={transcript}
+                    onClose={() => {
+                        stopListening();
+                        setIsVoiceSearchActive(false);
+                    }}
+                    onSearchComplete={handleVoiceSearchComplete}
+                />
+            )}
+
+            <ImageSearchModal
+                isOpen={isImageSearchOpen}
+                onClose={() => setIsImageSearchOpen(false)}
+                onImageSelect={selectImage}
+            />
         </div>
-    )
-}
+    );
+};
 
 export default Main;
