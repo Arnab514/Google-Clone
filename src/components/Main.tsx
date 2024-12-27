@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import VoiceSearchPage from './VoiceSearchPage';
 import ImageSearchModal from './ImageSearchModal';
+import ImageSearchResults from './ImageSearchResults';
 import debounce from 'lodash/debounce';
 
 const Main: React.FC = () => {
@@ -154,7 +155,10 @@ const Main: React.FC = () => {
             const response = await fetch(imageData);
             const blob = await response.blob();
             const objectUrl = URL.createObjectURL(blob);
-            document.location.assign(`https://www.google.com/searchbyimage?&image_url=${objectUrl}`);
+            localStorage.setItem('searchImage', imageData);
+            router.push('/image-search-results');
+            // router.push(`/image-search-results?image=${encodeURIComponent(imageData)}`);
+            // document.location.assign(`https://www.google.com/searchbyimage?&image_url=${objectUrl}`);
         } catch (error) {
             console.error('Error processing image:', error);
         }
