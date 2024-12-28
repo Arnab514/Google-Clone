@@ -32,8 +32,6 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  // const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
-
 
   useEffect(() => {
     setMounted(true);
@@ -72,18 +70,6 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
     fetchProducts();
   }, []);
 
-  // useEffect(() => {
-  //   const img = new window.Image();
-  //   img.src = searchImage;
-  //   img.onload = () => {
-  //     setImageDimensions({ width: img.width, height: img.height });
-  //   };
-  // }, [searchImage]);
-
-  // if (!mounted) {
-  //   return null;
-  // }
-
   return (
     <div className="flex flex-col h-screen">
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center">
@@ -108,7 +94,6 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
               alt="Profile"
               fill
               className="rounded-full object-cover"
-              // unoptimized
             />
           </div>
         </div>
@@ -117,18 +102,29 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/3 bg-[#202124] flex items-center justify-center p-4">
           <div className="relative w-full h-full flex items-center justify-center">
-            <div className="max-w-full max-h-full overflow-hidden flex items-center justify-center">
-              {mounted && (
-                <img
-                  src={searchImage}
-                  alt="Search reference"
-                  // width={imageDimensions.width}
-                  // height={imageDimensions.height}
-                  sizes="100vw"
-                  className="w-auto  max-w-full max-h-[75vh] "
-                  // unoptimized
-                />
-              )}
+            {/* Image container */}
+            <div className="relative w-full h-full flex flex-col items-center justify-center">
+              {/* Text at the top of the image */}
+              <div className="mb-8 text-center text-gray-300 text-md font-medium">
+                <p>You searched for this</p>
+              </div>
+
+              {/* Image itself */}
+              <div className="max-w-full max-h-full overflow-hidden flex items-center justify-center">
+                {mounted && (
+                  <img
+                    src={searchImage}
+                    alt="Search reference"
+                    sizes="100vw"
+                    className="w-auto max-w-full max-h-[75vh]"
+                  />
+                )}
+              </div>
+
+              {/* Text at the bottom of the image */}
+              <div className="mt-20 text-center text-gray-300 text-md font-medium">
+                <p>Here are the suitable results for your image</p>
+              </div>
             </div>
           </div>
         </div>
@@ -142,11 +138,11 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
             <div className="p-6">
               {products.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
                     {products.map((product) => (
                       <div
                         key={product.id}
-                        className="group cursor-pointer"
+                        className="group mb-4 cursor-pointer break-inside-avoid-column"
                         onClick={() => window.open(`https://www.google.com/search?q=${product.category}&tbm=shop`, '_blank')}
                       >
                         <div className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
@@ -202,6 +198,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
 };
 
 export default ImageSearchResults;
+
 
 
 // import React, { useEffect, useState } from 'react';
