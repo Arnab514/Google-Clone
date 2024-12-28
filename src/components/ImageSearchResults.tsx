@@ -579,8 +579,7 @@
 // export default ImageSearchResults;
 
 
-
-'use client'
+'use client';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -589,8 +588,20 @@ import { TbGridDots } from 'react-icons/tb';
 const googleLogo = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png';
 const url = "https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80";
 
+type Product = {
+  id: string;
+  image: string;
+  platform: string;
+  price: string;
+  title: string;
+  rating?: number;
+  numReviews?: number;
+  size: 'medium' | 'large';
+  productUrl: string;
+};
+
 const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -611,7 +622,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
         const data = await response.json();
 
         if (data?.status === "OK" && data?.data?.products && Array.isArray(data.data.products)) {
-          const transformedProducts = data.data.products.map((item, index) => ({
+          const transformedProducts: Product[] = data.data.products.map((item, index) => ({
             id: item.product_id,
             image: item.product_photos?.[0] || "/api/placeholder/180/240",
             platform: "Google Shopping",
