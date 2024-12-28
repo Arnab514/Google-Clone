@@ -21,6 +21,8 @@ const Main: React.FC = () => {
     const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+//     const [selectedImage, setSelectedImage] = useState<string>('');
+// const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | undefined>();
     
 
     const {
@@ -155,7 +157,9 @@ const Main: React.FC = () => {
             const response = await fetch(imageData);
             const blob = await response.blob();
             const objectUrl = URL.createObjectURL(blob);
-            localStorage.setItem('searchImage', imageData);
+            // setSelectedImage(imageData);
+            // setImageDimensions(dimensions);
+            localStorage.setItem('searchImage', objectUrl);
             router.push('/image-search-results');
             // router.push(`/image-search-results?image=${encodeURIComponent(imageData)}`);
             // document.location.assign(`https://www.google.com/searchbyimage?&image_url=${objectUrl}`);
@@ -272,32 +276,45 @@ const Main: React.FC = () => {
                         </form>
 
                         {showSuggestions && search && (
-                            <div className="absolute left-0 right-0 bg-[#303134] mt-1 rounded-lg border border-gray-700 shadow-lg max-h-96 overflow-y-auto z-50 w-[584px]">
-                                {isLoading ? (
-                                    <div className="flex items-center justify-center py-4">
-                                        <AiOutlineLoading3Quarters className="animate-spin text-gray-400" />
-                                    </div>
-                                ) : (
-                                    suggestions.map((suggestion, index) => (
-                                        <div
-                                            key={index}
-                                            className={`px-4 py-2 hover:bg-[#404145] cursor-pointer flex items-center ${
-                                                selectedIndex === index ? 'bg-[#404145]' : ''
-                                            }`}
-                                            onClick={() => {
-                                                setSearch(suggestion);
-                                                setShowSuggestions(false);
-                                                router.push(`https://google.com/search?q=${suggestion}`);
-                                            }}
-                                            onMouseEnter={() => setSelectedIndex(index)}
-                                        >
-                                            <AiOutlineSearch className="text-gray-400 mr-3 flex-shrink-0" />
-                                            <span className="text-gray-300">{highlightMatch(suggestion)}</span>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
+    <div className="absolute left-0 right-0 bg-[#303134]  rounded-lg  shadow-lg max-h-96 z-50 w-[584px] overflow-hidden">
+        {isLoading ? (
+            <div className="flex items-center justify-center py-4">
+                <AiOutlineLoading3Quarters className="animate-spin text-gray-400" />
+            </div>
+        ) : (
+            <div className="overflow-auto max-h-96 custom-scrollbar">
+                {suggestions.map((suggestion, index) => (
+                    <div
+                        key={index}
+                        className={`px-4 py-2 hover:bg-[#404145] cursor-pointer flex items-center ${
+                            selectedIndex === index ? 'bg-[#404145]' : ''
+                        }`}
+                        onClick={() => {
+                            setSearch(suggestion);
+                            setShowSuggestions(false);
+                            router.push(`https://google.com/search?q=${suggestion}`);
+                        }}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                    >
+                        <AiOutlineSearch className="text-gray-400 mr-3 flex-shrink-0" />
+                        <span className="text-gray-300">{highlightMatch(suggestion)}</span>
+                    </div>
+                ))}
+            </div>
+        )}
+    </div>
+)}
+
+<style jsx>{`
+    .custom-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .custom-scrollbar {
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+        scrollbar-width: none;  /* Firefox */
+    }
+`}</style>
+
 
                         {showTooltip && (
                             <div
