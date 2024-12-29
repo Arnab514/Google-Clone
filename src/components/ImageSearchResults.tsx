@@ -28,6 +28,36 @@ const convertToINR = (usdPrice: number): string => {
   return `₹${Math.round(inrPrice).toLocaleString('en-IN')}`;
 };
 
+const LoadingSkeleton = () => {
+  return (
+    <div className="p-6 animate-pulse">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {[...Array(12)].map((_, index) => (
+          <div key={index} className="mb-4">
+            <div className="border border-gray-200 rounded-lg h-60">
+              <div className="relative h-44 bg-gray-200"></div>
+              <div className="p-3">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+                <div className="flex flex-col mt-1">
+                  <div className="h-4 bg-gray-200 rounded w-1/4 mt-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+                </div>
+                <div className="flex items-center mt-1">
+                  <div className="h-4 bg-gray-200 rounded w-1/4 mt-2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 flex justify-center">
+        <div className="h-10 bg-gray-200 rounded w-32"></div>
+      </div>
+    </div>
+  );
+};
+
 const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,14 +132,11 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/3 bg-[#202124] flex items-center justify-center p-4">
           <div className="relative w-full h-full flex items-center justify-center">
-            {/* Image container */}
             <div className="relative w-full h-full flex flex-col items-center justify-center">
-              {/* Text at the top of the image */}
               <div className="mb-8 text-center text-gray-300 text-md font-medium">
                 <p>You searched for this</p>
               </div>
 
-              {/* Image itself */}
               <div className="max-w-full max-h-full overflow-hidden flex items-center justify-center">
                 {mounted && (
                   <img
@@ -121,7 +148,6 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
                 )}
               </div>
 
-              {/* Text at the bottom of the image */}
               <div className="mt-20 text-center text-gray-300 text-md font-medium">
                 <p>Here are the suitable results for your image</p>
               </div>
@@ -131,9 +157,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
 
         <div className="w-2/3 overflow-y-auto" style={{ height: 'calc(100vh - 56px)' }}>
           {loading ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-gray-900"></div>
-            </div>
+            <LoadingSkeleton />
           ) : (
             <div className="p-6">
               {products.length > 0 ? (
