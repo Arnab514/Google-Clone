@@ -618,8 +618,6 @@
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReactCrop, { Crop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
 
 interface ImageSearchProps {
     isOpen: boolean;
@@ -632,47 +630,8 @@ const ImageSearchModal: React.FC<ImageSearchProps> = ({ isOpen, onClose, onImage
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
-    const [crop, setCrop] = useState<Crop>({
-        unit: '%',
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 100
-    });
-    const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const imageRef = useRef<HTMLImageElement>(null);
-
-    const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-        const img = e.currentTarget;
-        setImageDimensions({
-            width: img.naturalWidth,
-            height: img.naturalHeight
-        });
-
-        // Set initial crop based on image dimensions
-        const aspectRatio = img.naturalWidth / img.naturalHeight;
-        if (aspectRatio > 1) {
-            // Landscape
-            setCrop({
-                unit: '%',
-                x: 0,
-                y: 0,
-                width: 100,
-                height: 100
-            });
-        } else {
-            // Portrait
-            setCrop({
-                unit: '%',
-                x: 0,
-                y: 0,
-                width: 100,
-                height: 100
-            });
-        }
-    };
 
     const handleDragEnter = (e: React.DragEvent) => {
         e.preventDefault();
@@ -728,57 +687,13 @@ const ImageSearchModal: React.FC<ImageSearchProps> = ({ isOpen, onClose, onImage
         }
     };
 
-    const getCroppedImage = async () => {
-        if (!imageRef.current) return null;
-    
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return null;
-    
-        if (crop?.width && crop?.height) {
-            // Handle cropped image
-            const scaleX = imageRef.current.naturalWidth / imageRef.current.width;
-            const scaleY = imageRef.current.naturalHeight / imageRef.current.height;
-    
-            canvas.width = crop.width * scaleX;
-            canvas.height = crop.height * scaleY;
-    
-            ctx.drawImage(
-                imageRef.current,
-                crop.x * scaleX,
-                crop.y * scaleY,
-                crop.width * scaleX,
-                crop.height * scaleY,
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-        } else {
-            // Handle uncropped image
-            canvas.width = imageRef.current.naturalWidth;
-            canvas.height = imageRef.current.naturalHeight;
-    
-            ctx.drawImage(imageRef.current, 0, 0, canvas.width, canvas.height);
-        }
-    
-        return canvas.toDataURL('image/jpeg');
-    };
-    
-
     const handleSearch = async () => {
         if (selectedImage) {
             setIsProcessing(true);
             try {
-                const croppedImage = await getCroppedImage();
-                if (croppedImage) {
-                    onImageSelect(croppedImage);
-                } else {
-                    onImageSelect(selectedImage);
-                }
-            } catch (error) {
-                console.error('Error processing cropped image:', error);
                 onImageSelect(selectedImage);
+            } catch (error) {
+                console.error('Error processing image:', error);
             }
             setIsProcessing(false);
             onClose();
@@ -880,24 +795,11 @@ const ImageSearchModal: React.FC<ImageSearchProps> = ({ isOpen, onClose, onImage
                             <div className="space-y-4">
                                 <div className="flex justify-center items-center">
                                     <div className="relative max-w-full max-h-[400px] flex justify-center">
-                                        <ReactCrop
-                                            crop={crop}
-                                            onChange={c => setCrop(c)}
-                                            className="max-w-full max-h-[400px] flex justify-center"
-                                            style={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <img
-                                                ref={imageRef}
-                                                src={selectedImage}
-                                                alt="Selected"
-                                                onLoad={handleImageLoad}
-                                                className="max-w-full max-h-[400px] object-contain mx-auto"
-                                            />
-                                        </ReactCrop>
+                                        <img
+                                            src={selectedImage}
+                                            alt="Selected"
+                                            className="max-w-full max-h-[400px] object-contain mx-auto"
+                                        />
                                     </div>
                                 </div>
                                 <div className="flex justify-end space-x-3">
