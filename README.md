@@ -14,6 +14,7 @@ The project repository is hosted on GitHub:
 - **Pixel-perfect Google Homepage Clone**: A close replica of the Google homepage with all UI details and hover effects.
 - **Text Search Functionality**: Includes a search bar with real-time suggestions. Hover effects and smooth dropdown animations are implemented.
 - **Pixel-perfect Search by Voice**: A feature that allows users to search using voice input, closely replicating Google's voice search functionality. The voice search feature provides a smooth and responsive experience.
+- **Image Search Page**: Clicking the camera icon opens a pop-up for uploading images. Image search results are displayed with placeholder data.
 - **Image Cropping Tool**: Allows users to crop uploaded images and includes a glowing stars animation for enhanced UI.
 - **Built with TypeScript**: The project uses TypeScript to ensure type safety and prevent potential runtime issues.
 
