@@ -7,6 +7,7 @@ import { BsArrowRight } from 'react-icons/bs';
 import { CropIcon, RotateCcw, SearchIcon, Loader2 } from 'lucide-react';
 import ReactCrop, { Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { LoadingSkeleton } from '../components/LoadingSkeleton'
 
 const googleLogo = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png';
 const profileUrl = "https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80";
@@ -31,39 +32,40 @@ const convertToINR = (usdPrice: number): string => {
   return `₹${Math.round(inrPrice).toLocaleString('en-IN')}`;
 };
 
-const LoadingSkeleton = () => {
-  return (
-    <div className="p-6 animate-pulse">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {[...Array(12)].map((_, index) => (
-          <div key={index} className="mb-4">
-            <div className="border border-gray-200 rounded-lg h-60">
-              <div className="relative h-44 bg-gray-200"></div>
-              <div className="p-3">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
-                <div className="flex flex-col mt-1">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mt-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
-                </div>
-                <div className="flex items-center mt-1">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mt-2"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+// const LoadingSkeleton = () => {
+//   return (
+//     <div className="p-6 animate-pulse">
+//       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+//         {[...Array(12)].map((_, index) => (
+//           <div key={index} className="mb-4">
+//             <div className="bg-white border border-gray-200 rounded-lg h-[280px]">
+//               <div className="relative h-44 bg-gray-200"></div>
+//               <div className="p-3 space-y-2">
+//                 <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+//                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+//                 <div className="flex flex-col gap-2">
+//                   <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+//                   <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         ))}
+//       </div>
+//       <div className="mt-8 flex justify-center">
+//         <div className="h-10 bg-gray-200 rounded-lg w-36"></div>
+//       </div>
+//     </div>
+//   );
+// };
 
 const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isCropping, setIsCropping] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
     x: 25,
@@ -119,12 +121,10 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
         height: Math.round(crop.height)
       };
 
-      // Clear any existing timeout
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
 
-      // Add a natural delay before fetching results
       searchTimeoutRef.current = setTimeout(() => {
         fetchProducts(cropArea);
       }, 1500);
@@ -142,7 +142,6 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
     });
     setSearching(true);
     
-    // Add delay for reset search
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
@@ -166,6 +165,11 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
 
   const fetchProducts = async (cropArea?: { x: number; y: number; width: number; height: number }) => {
     try {
+      // Simulate network delay for initial load
+      if (initialLoading) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+      
       const response = await fetch('https://fakestoreapi.com/products?limit=20');
       const data = await response.json();
 
@@ -192,7 +196,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
       console.error('Error fetching products:', error);
       setProducts([]);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
       setSearching(false);
     }
   };
@@ -207,6 +211,10 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
       }
     };
   }, []);
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -243,7 +251,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
             <div className="relative w-full h-full flex flex-col items-center justify-center">
               <div className="mb-8 text-center text-gray-300 text-md font-medium flex items-center space-x-4">
                 <p>You searched for this</p>
-                {!croppedImageUrl && (
+                {!croppedImageUrl && mounted && imageLoaded && (
                   <button 
                     onClick={toggleCropping}
                     className="p-2 rounded-full hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -288,7 +296,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
                         src={searchImage}
                         alt="Search reference"
                         className="w-auto max-w-full max-h-[75vh]"
-                        onLoad={() => setLoading(false)}
+                        onLoad={handleImageLoad}
                       />
                     </ReactCrop>
                   ) : (
@@ -297,7 +305,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
                       alt="Search reference"
                       sizes="100vw"
                       className="w-auto max-w-full max-h-[75vh] transition-opacity duration-300"
-                      onLoad={() => setLoading(false)}
+                      onLoad={handleImageLoad}
                     />
                   )
                 )}
@@ -320,7 +328,7 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
         </div>
 
         <div className="w-2/3 overflow-y-auto bg-gray-50" style={{ height: 'calc(100vh - 56px)' }}>
-          {loading || searching ? (
+          {initialLoading || searching ? (
             <LoadingSkeleton />
           ) : (
             <div className="p-6">
@@ -355,12 +363,13 @@ const ImageSearchResults = ({ searchImage }: { searchImage: string }) => {
                             {product.rating && (
                               <div className="flex items-center mt-2">
                                 <span className="text-yellow-400">★</span>
+                                {/* <span className="text */}
                                 <span className="text-sm ml-1">{product.rating.toFixed(1)}</span>
                               </div>
                             )}
                           </div>
                         </div>
-                        </div>
+                      </div>
                     ))}
                   </div>
                   <div className="mt-8 flex justify-center">
